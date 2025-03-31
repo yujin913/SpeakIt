@@ -1,0 +1,42 @@
+/* src/pages/MainPage.css */
+.main-page {
+    background-color: #f7f7f7; /* 두 사이트와 유사한 연한 회색 배경 */
+    min-height: 100vh;
+  }
+  
+  .hero {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 100px 0;
+    text-align: center;
+    background: #f7f7f7;
+  }
+  
+  .hero-content h1 {
+    font-size: 48px;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  .hero-content p {
+    font-size: 20px;
+    color: #666;
+    margin-bottom: 40px;
+  }
+  
+  .cta-button {
+    background-color: #3498db; /* 포인트 파란색 */
+    color: #fff;
+    border: none;
+    padding: 15px 30px;
+    font-size: 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .cta-button:hover {
+    background-color: #2980b9;
+  }
+  

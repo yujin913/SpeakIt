@@ -1,0 +1,49 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.4.3'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.speakit'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// Spring Boot Starters: 기본 웹, 보안, 데이터, Kafka 등 주요 기능을 제공
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.kafka:spring-kafka'
+
+	// Development Only: 개발 시 편의를 위한 도구 (배포 시 제외)
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+	// Lombok (Compile Time Only): 코드 간결화를 위한 컴파일 타임 도구
+	implementation 'org.projectlombok:lombok'
+
+	// Database: MySQL 연결을 위한 드라이버
+	runtimeOnly 'com.mysql:mysql-connector-j'
+
+	// Testing: 테스트 및 검증을 위한 의존성들
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.kafka:spring-kafka-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
