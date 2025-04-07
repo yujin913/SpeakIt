@@ -1,4 +1,5 @@
 /* src/pages/SignInPage.js */
+
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -11,19 +12,23 @@ const SignInPage = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
+  // 일반 로그인 API 호출 함수 (JWT 토큰은 서버가 HttpOnly 쿠키에 저장)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
     const data = { email, password };
 
     try {
-      // 로그인 API 호출 시 withCredentials 옵션 추가
       const response = await axios.post('http://localhost:8080/user/signIn', data, { withCredentials: true });
-      // 로그인 성공 후, 반환된 사용자 정보를 로컬 스토리지에 저장
-      localStorage.setItem("user", JSON.stringify(response.data));
+      // 필요에 따라 UI용 최소한의 사용자 정보 저장 (토큰은 HttpOnly 쿠키에 저장됨)
+      localStorage.setItem("user", JSON.stringify({
+        id: response.data.id,
+        username: response.data.username,
+        email: response.data.email,
+        createdAt: response.data.createdAt
+      }));
       alert("로그인 성공!");
       console.log(response.data);
-      // 메인 페이지로 이동
       navigate('/', { replace: true });
     } catch (error) {
       let msg = "로그인 실패, 다시 시도해주세요.";
@@ -33,6 +38,11 @@ const SignInPage = () => {
       setErrorMessage(msg);
       console.error('로그인 에러', error.response || error);
     }
+  };
+
+  // 구글 로그인 버튼 클릭 시, 백엔드 OAuth2 시작 URL로 리다이렉트
+  const handleGoogleSignIn = () => {
+    window.location.href = 'http://localhost:8080/oauth2/authorization/google';
   };
 
   return (
@@ -72,6 +82,12 @@ const SignInPage = () => {
             <div className="form-group">
               <button type="submit" className="page-signin">
                 로그인
+              </button>
+            </div>
+            {/* 구글 로그인 버튼 추가 */}
+            <div className="form-group">
+              <button type="button" className="google-signin" onClick={handleGoogleSignIn}>
+                구글 로그인
               </button>
             </div>
           </form>

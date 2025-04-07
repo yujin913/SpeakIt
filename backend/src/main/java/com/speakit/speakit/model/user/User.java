@@ -32,4 +32,11 @@ public class User {
     private String providerId;
 
     private LocalDateTime createdAt;
+
+    // JWT Refresh Token 저장 (필요 시 갱신 및 만료 체크)
+    @Column(name = "refresh_token")
+    private String refreshToken;
+
+    @Column(nullable = false)
+    private String role;
 }

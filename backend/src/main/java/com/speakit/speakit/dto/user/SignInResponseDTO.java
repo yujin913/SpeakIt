@@ -14,4 +14,6 @@ public class SignInResponseDTO {
     private String username;
     private String email;
     private LocalDateTime createdAt;
+    private String accessToken;
+    private String refreshToken;
 }

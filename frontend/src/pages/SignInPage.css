@@ -82,6 +82,25 @@
   background-color: #2980b9;
 }
 
+/* 구글 로그인 버튼 스타일 */
+.google-signin {
+  background-color: #DB4437;
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+  transition: background-color 0.3s;
+  margin-top: 10px;
+}
+
+.google-signin:hover {
+  background-color: #c33d2f;
+}
+
 /* 오류 메시지 블록 스타일 */
 .error-block {
   color: red;

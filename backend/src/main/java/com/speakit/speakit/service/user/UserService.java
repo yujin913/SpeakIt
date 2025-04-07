@@ -14,4 +14,7 @@ public interface UserService {
     ProfileResponseDTO getProfileByEmail(String email);
     ProfileResponseDTO updateProfile(String email, ProfileUpdateRequestDTO updateRequestDTO);
     void deleteAccount(String email, DeleteAccountRequestDTO deleteAccountRequestDTO);
+
+    // JWT 로그아웃 시 refresh token을 제거하기 위한 메서드 추가
+    void logout(String email);
 }

@@ -3,10 +3,12 @@ package com.speakit.speakit.service.user;
 import com.speakit.speakit.model.user.User;
 import com.speakit.speakit.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * CustomUserDetailsService는 Spring Security의 UserDetailsService 인터페이스를 구현합니다.
@@ -34,7 +36,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPassword(),
-                new ArrayList<>()
+                List.of(new SimpleGrantedAuthority(user.getRole()))
         );
     }
 }

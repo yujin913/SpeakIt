@@ -4,6 +4,7 @@ import com.speakit.speakit.dto.user.*;
 import com.speakit.speakit.exception.MultiErrorException;
 import com.speakit.speakit.model.user.User;
 import com.speakit.speakit.repository.user.UserRepository;
+import com.speakit.speakit.security.JwtTokenProvider;
 import com.speakit.speakit.util.PasswordPolicy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -33,14 +34,17 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
-                           AuthenticationManager authenticationManager) {
+                           AuthenticationManager authenticationManager,
+                           JwtTokenProvider jwtTokenProvider) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
 
@@ -64,6 +68,7 @@ public class UserServiceImpl implements UserService {
                 .email(signUpRequestDTO.getEmail())
                 .password(passwordEncoder.encode(signUpRequestDTO.getPassword()))
                 .createdAt(LocalDateTime.now())
+                .role("ROLE_USER")
                 .build();
         User savedUser = userRepository.save(user);
 
@@ -78,21 +83,30 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public SignInResponseDTO signIn(SignInRequestDTO signInRequestDTO) {
-        // 표준 Spring Security 인증 매커니즘 사용
+        // 인증 객체 생성 후 인증 수행 (예외 발생 시 AuthenticationException)
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(signInRequestDTO.getEmail(), signInRequestDTO.getPassword());
         Authentication authentication = authenticationManager.authenticate(authToken);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
 
+        // JWT 토큰 생성 (access token과 refresh token)
+        String accessToken = jwtTokenProvider.generateAccessToken(authentication);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(authentication);
+
+        // DB에서 사용자 정보 조회 및 refresh token 저장
         User user = userRepository.findByEmail(signInRequestDTO.getEmail());
         if (user == null) {
             throw new RuntimeException("User not found");
         }
+        user.setRefreshToken(refreshToken);
+        userRepository.save(user);
+
         return SignInResponseDTO.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .createdAt(user.getCreatedAt())
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .build();
     }
 
@@ -147,6 +161,17 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("현재 비밀번호가 올바르지 않습니다.");
         }
         userRepository.delete(user);
+    }
+
+
+    @Override
+    public void logout(String email) {
+        User user = userRepository.findByEmail(email);
+        if (user != null) {
+            // refresh token 제거로 재발급 방지
+            user.setRefreshToken(null);
+            userRepository.save(user);
+        }
     }
 
 
