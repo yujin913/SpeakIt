@@ -17,4 +17,6 @@ public interface UserService {
 
     // JWT 로그아웃 시 refresh token을 제거하기 위한 메서드 추가
     void logout(String email);
+    // 소셜 로그인 연동 해제 기능: 해당 사용자의 구글 연동을 해제하고, 필요하면 사용자 삭제 또는 상태 업데이트
+    void disconnectSocialAccount(String email);
 }

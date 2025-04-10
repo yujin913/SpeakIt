@@ -2,17 +2,21 @@ package com.speakit.speakit.service.user;
 
 import com.speakit.speakit.dto.user.*;
 import com.speakit.speakit.exception.MultiErrorException;
+import com.speakit.speakit.exception.SocialLoginUpdateException;
 import com.speakit.speakit.model.user.User;
 import com.speakit.speakit.repository.user.UserRepository;
 import com.speakit.speakit.security.JwtTokenProvider;
 import com.speakit.speakit.util.PasswordPolicy;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -134,6 +138,12 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             throw new RuntimeException("회원 정보를 찾을 수 없습니다.");
         }
+
+        // 소셜 로그인 사용자는 수정이 불가하므로, provider 값이 있으면 예외 발생
+        if (user.getProvider() != null && !user.getProvider().isBlank()) {
+            throw new SocialLoginUpdateException("소셜 로그인 사용자는 회원정보 수정이 불가합니다.");
+        }
+
         // 현재 비밀번호 검증
         if (!passwordEncoder.matches(updateRequestDTO.getCurrentPassword(), user.getPassword())) {
             throw new RuntimeException("현재 비밀번호가 올바르지 않습니다.");
@@ -198,4 +208,28 @@ public class UserServiceImpl implements UserService {
         }
         return updated;
     }
+
+
+    @Override
+    public void disconnectSocialAccount(String email) {
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new RuntimeException("회원 정보를 찾을 수 없습니다.");
+        }
+        if (user.getProvider() != null && !user.getProvider().isBlank()
+                && "google".equalsIgnoreCase(user.getProvider())) {
+            String socialAccessToken = user.getSocialAccessToken();
+            if (socialAccessToken != null && !socialAccessToken.isBlank()) {
+                String revokeUrl = "https://accounts.google.com/o/oauth2/revoke?token=" + socialAccessToken;
+                RestTemplate restTemplate = new RestTemplate();
+                try {
+                    restTemplate.getForEntity(revokeUrl, String.class);
+                } catch (Exception e) {
+                    throw new RuntimeException("구글 연동 해제에 실패하였습니다.");
+                }
+            }
+        }
+        userRepository.delete(user);
+    }
+
 }

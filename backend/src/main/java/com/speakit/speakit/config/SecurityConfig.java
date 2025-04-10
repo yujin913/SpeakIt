@@ -6,7 +6,6 @@ import com.speakit.speakit.security.oauth2.OAuth2AuthenticationFailureHandler;
 import com.speakit.speakit.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,14 +28,17 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private CustomOAuth2UserService customOAuth2UserService;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
 
-    @Autowired
-    private OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
-
-    @Autowired
-    private OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
+    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService,
+                          OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler,
+                          OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler) {
+        this.customOAuth2UserService = customOAuth2UserService;
+        this.oAuth2AuthenticationSuccessHandler = oAuth2AuthenticationSuccessHandler;
+        this.oAuth2AuthenticationFailureHandler = oAuth2AuthenticationFailureHandler;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -50,7 +52,7 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(customAuthenticationEntryPoint()))
                 // URL 접근 권한 설정: signUp, signIn, 그리고 OAuth2 관련 URL은 누구나 접근 가능
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/user/signUp", "/user/signIn", "/oauth2/**", "/login/oauth2/**", "/favicon.ico").permitAll()
+                        .requestMatchers("/user/signUp", "/user/signIn", "/user/loginStatus", "/oauth2/**", "/login/oauth2/**", "/favicon.ico").permitAll()
                         .anyRequest().authenticated()
                 )
                 // JWT 필터를 UsernamePasswordAuthenticationFilter 이전에 추가하여 요청마다 토큰 검증 수행
@@ -74,7 +76,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationEntryPoint customAuthenticationEntryPoint() {
-        // 인증 실패 시 리다이렉트 대신 401 Unauthorized와 JSON 메시지 반환
+        // 인증 실패 시 리다이렉트 대신 401 오류와 JSON 메시지 반환
         return new AuthenticationEntryPoint() {
             @Override
             public void commence(HttpServletRequest request, HttpServletResponse response,

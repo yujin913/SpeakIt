@@ -27,9 +27,8 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    // 소셜 로그인 관련 정보 (연동 해제 시 null 가능)
-    private String provider;
-    private String providerId;
+    @Column(nullable = false)
+    private String role;
 
     private LocalDateTime createdAt;
 
@@ -37,6 +36,12 @@ public class User {
     @Column(name = "refresh_token")
     private String refreshToken;
 
-    @Column(nullable = false)
-    private String role;
+    // 소셜 로그인 관련 정보 (연동 해제 시 null 가능)
+    private String provider;
+    private String providerId;
+
+    // 소셜 로그인 액세스 토큰 (구글 연동 해제 등 기능에 사용)
+    @Column(name = "social_access_token")
+    private String socialAccessToken;
+
 }

@@ -7,16 +7,15 @@ import Header from '../components/Header';
 import './ProfilePage.css';
 
 const ProfilePage = () => {
-  // 로컬 스토리지에 저장된 최소한의 사용자 정보 (JWT 토큰은 HttpOnly 쿠키에 있으므로 클라이언트에서 접근 불가)
-  const storedUser = JSON.parse(localStorage.getItem("user"));
-  const navigate = useNavigate();
-
+  
   const [profile, setProfile] = useState(null);
   const [editUsername, setEditUsername] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [errorMessages, setErrorMessages] = useState([]);
   const [error, setError] = useState('');
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios.get('http://localhost:8080/user/profile', { withCredentials: true })
@@ -33,6 +32,7 @@ const ProfilePage = () => {
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setErrorMessages([]);
+
     const data = {
       currentPassword: currentPassword,
       ...(editUsername.trim() !== '' && { username: editUsername }),
@@ -46,13 +46,6 @@ const ProfilePage = () => {
       setProfile(response.data);
       setCurrentPassword('');
       setNewPassword('');
-      // UI용 사용자 정보 업데이트 (토큰은 HttpOnly 쿠키에 저장)
-      localStorage.setItem("user", JSON.stringify({
-        id: response.data.id,
-        username: response.data.username,
-        email: response.data.email,
-        createdAt: response.data.createdAt
-      }));
     } catch (error) {
       let msg = "회원정보 수정 실패, 다시 시도해주세요.";
       if (error.response && error.response.data && error.response.data.message) {
@@ -65,34 +58,63 @@ const ProfilePage = () => {
   };
 
   const handleDeleteAccount = async () => {
-    if (!currentPassword.trim()) {
-      alert("회원탈퇴를 위해 현재 비밀번호를 입력해 주세요.");
+    // 먼저 프로필 정보가 로드되어 있어야 함
+    if (!profile) {
+      alert("프로필 정보를 먼저 불러오세요.");
       return;
     }
-    try {
-      const response = await axios.delete('http://localhost:8080/user/deleteAccount', {
-        data: { currentPassword: currentPassword },
-        withCredentials: true
-      });
-      console.log("계정 삭제 API 응답:", response.data);
-      localStorage.removeItem("user");
-      alert("계정이 삭제되었습니다.");
-      navigate('/signIn', { replace: true });
-      window.location.reload();
-    } catch (error) {
-      let msg = "계정 삭제 실패, 다시 시도해주세요.";
-      if (error.response && error.response.data && error.response.data.message) {
-        msg = error.response.data.message;
+
+    // 소셜 로그인 사용자인지 확인: 우리 시스템에서는 소셜 로그인 사용자는 password가 "SOCIAL_LOGIN" 값으로 저장됩니다.
+    if (profile.password === "SOCIAL_LOGIN") {
+      // 소셜 로그인 사용자는 비밀번호 입력 없이 탈퇴 진행
+      if (!window.confirm("정말 계정정보를 삭제하시겠습니까? (소셜 로그인 사용자)")) {
+        return;
       }
-      const errors = msg.split(",").map(err => err.trim());
-      setErrorMessages(errors);
-      console.error("계정 삭제 실패", error.response || error);
+      try {
+        const response = await axios.post('http://localhost:8080/disconnect/google', {}, { withCredentials: true });
+        console.log("소셜 연동 해제 API 응답:", response.data);
+        alert("계정이 삭제되었습니다.");
+        navigate('/', { replace: true });
+        window.location.reload();
+      } catch (error) {
+        let msg = "계정 삭제 실패, 다시 시도해주세요.";
+        if (error.response && error.response.data && error.response.data.message) {
+          msg = error.response.data.message;
+        }
+        const errors = msg.split(",").map(err => err.trim());
+        setErrorMessages(errors);
+        console.error("계정 삭제 실패", error.response || error);
+      }
+    } else {
+      // 일반 사용자의 경우 현재 비밀번호 입력을 요구함
+      if (!currentPassword.trim()) {
+        alert("회원탈퇴를 위해 현재 비밀번호를 입력해 주세요.");
+        return;
+      }
+      try {
+        const response = await axios.delete('http://localhost:8080/user/deleteAccount', {
+          data: { currentPassword: currentPassword },
+          withCredentials: true
+        });
+        console.log("계정 삭제 API 응답:", response.data);
+        alert("계정이 삭제되었습니다.");
+        navigate('/signIn', { replace: true });
+        window.location.reload();
+      } catch (error) {
+        let msg = "계정 삭제 실패, 다시 시도해주세요.";
+        if (error.response && error.response.data && error.response.data.message) {
+          msg = error.response.data.message;
+        }
+        const errors = msg.split(",").map(err => err.trim());
+        setErrorMessages(errors);
+        console.error("계정 삭제 실패", error.response || error);
+      }
     }
   };
 
   return (
     <div className="page-container">
-      <Header user={storedUser || null} />
+      <Header />
       <div className="page-content">
         <div className="profile-page">
           <h2>회원정보 조회</h2>
@@ -102,6 +124,10 @@ const ProfilePage = () => {
               <div className="form-group">
                 <label htmlFor="email">이메일</label>
                 <input type="email" id="email" value={profile.email} readOnly className="readonly-input" />
+              </div>
+              <div className="form-group">
+                <label htmlFor="registrationDate">가입일</label>
+                <input type="text" id="registrationDate" value={profile.registrationDate} readOnly className="readonly-input" />
               </div>
               <div className="form-group">
                 <label htmlFor="username">이름</label>

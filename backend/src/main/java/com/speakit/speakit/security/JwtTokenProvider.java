@@ -2,14 +2,16 @@ package com.speakit.speakit.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.security.core.Authentication;
+import org.springframework.util.Assert;
 
 import javax.crypto.SecretKey;
+import java.time.Duration;
 import java.util.Date;
 
 /**
@@ -21,26 +23,20 @@ public class JwtTokenProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
 
-    // application.properties에 정의된 jwt.secret 값
-    @Value("${jwt.secret}")
-    private String jwtSecret;
+    private final SecretKey jwtSecretKey;
+    @Getter
+    private final Duration accessTokenExpiration;
+    @Getter
+    private final Duration refreshTokenExpiration;
 
-    // application.properties에 정의된 Access Token 만료 시간 (밀리초 단위)
-    @Value("${jwt.accessTokenExpiration}")
-    private long jwtAccessTokenExpiration;
-
-    // application.properties에 정의된 Refresh Token 만료 시간 (밀리초 단위)
-    @Value("${jwt.refreshTokenExpiration}")
-    private long jwtRefreshTokenExpiration;
-
-    // SecretKey 객체는 애플리케이션 시작 시 한 번 초기화됩니다.
-    private SecretKey jwtSecretKey;
-
-    // @PostConstruct를 사용하여 빈 초기화 후, 고정된 SecretKey를 생성합니다.
-    @PostConstruct
-    public void init() {
-        // jwtSecret의 바이트 배열을 사용해 HS512 알고리즘에 적합한 SecretKey 생성
-        jwtSecretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    public JwtTokenProvider(
+            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.accessTokenExpiration}") Duration accessTokenExpiration,
+            @Value("${jwt.refreshTokenExpiration}") Duration refreshTokenExpiration) {
+        Assert.hasText(secret, "JWT secret must not be empty");
+        this.jwtSecretKey = Keys.hmacShaKeyFor(secret.getBytes());
+        this.accessTokenExpiration = accessTokenExpiration;
+        this.refreshTokenExpiration = refreshTokenExpiration;
     }
 
     /**
@@ -49,7 +45,7 @@ public class JwtTokenProvider {
     public String generateAccessToken(Authentication authentication) {
         String username = authentication.getName();
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtAccessTokenExpiration);
+        Date expiryDate = new Date(now.getTime() + accessTokenExpiration.toMillis());
 
         logger.debug("Generating access token for user: {}, expires at: {}", username, expiryDate);
 
@@ -67,7 +63,7 @@ public class JwtTokenProvider {
     public String generateRefreshToken(Authentication authentication) {
         String username = authentication.getName();
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtRefreshTokenExpiration);
+        Date expiryDate = new Date(now.getTime() + refreshTokenExpiration.toMillis());
 
         logger.debug("Generating refresh token for user: {}, expires at: {}", username, expiryDate);
 

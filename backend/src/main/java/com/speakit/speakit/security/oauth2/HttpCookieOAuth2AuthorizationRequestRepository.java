@@ -1,5 +1,6 @@
 package com.speakit.speakit.security.oauth2;
 
+import com.speakit.speakit.util.CookieUtils;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

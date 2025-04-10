@@ -3,30 +3,30 @@ package com.speakit.speakit.controller.user;
 import com.speakit.speakit.dto.user.*;
 import com.speakit.speakit.security.JwtTokenProvider;
 import com.speakit.speakit.service.user.UserService;
+import com.speakit.speakit.util.CookieUtils;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
 public class UserController {
 
-    @Autowired
-    private JwtTokenProvider jwtTokenProvider;
 
     private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, JwtTokenProvider jwtTokenProvider) {
         this.userService = userService;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
 
@@ -44,23 +44,13 @@ public class UserController {
         // 인증을 수행하고 JWT 토큰을 포함한 응답 DTO를 받음
         SignInResponseDTO responseDTO = userService.signIn(signInRequestDTO);
 
-        // JWT 토큰을 HttpOnly 쿠키에 저장 (Access Token: 1시간, Refresh Token: 24시간)
-        Cookie accessCookie = new Cookie("accessToken", responseDTO.getAccessToken());
-        accessCookie.setHttpOnly(true);
-        accessCookie.setPath("/");
-        accessCookie.setMaxAge(3600);
-        accessCookie.setSecure(false); // 개발환경에서는 false, 운영 시 HTTPS에서는 true
+        // JwtTokenProvider에서 Duration 타입의 만료 시간을 직접 가져와 CookieUtils.setAuthCookies에 전달합니다.
+        CookieUtils.setAuthCookies(response,
+                responseDTO.getAccessToken(),
+                responseDTO.getRefreshToken(),
+                jwtTokenProvider.getAccessTokenExpiration(),
+                jwtTokenProvider.getRefreshTokenExpiration());
 
-        Cookie refreshCookie = new Cookie("refreshToken", responseDTO.getRefreshToken());
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(86400);
-        refreshCookie.setSecure(false);
-
-        response.addCookie(accessCookie);
-        response.addCookie(refreshCookie);
-
-        // (선택 사항) 클라이언트에 사용자 정보만 전달할 수 있음.
         // JWT 토큰은 HttpOnly 쿠키에 저장되므로 클라이언트에서 직접 접근 불가.
         // 여기서는 사용자 정보만 반환합니다.
         SignInResponseDTO minimalResponse = SignInResponseDTO.builder()
@@ -113,23 +103,9 @@ public class UserController {
         SecurityContextHolder.clearContext();
 
         // JSESSIONID, accessToken, refreshToken 쿠키 만료 처리
-        clearCookie(response, "JSESSIONID");
-        clearCookie(response, "accessToken");
-        clearCookie(response, "refreshToken");
+        CookieUtils.clearCookies(response, "JSESSIONID", "accessToken", "refreshToken");
 
         return new ResponseEntity<>("로그아웃 성공", HttpStatus.OK);
-    }
-
-    /**
-     * 지정한 이름의 쿠키를 삭제하도록 Set-Cookie 헤더에 추가하는 메서드입니다.
-     */
-    private void clearCookie(HttpServletResponse response, String cookieName) {
-        Cookie cookie = new Cookie(cookieName, null);
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-        // HttpOnly 쿠키라면 HttpOnly 옵션을 설정합니다.
-        cookie.setHttpOnly(true);
-        response.addCookie(cookie);
     }
 
 
@@ -145,7 +121,7 @@ public class UserController {
     }
 
 
-    // 회원정보 수정 API: PATCH /user/profile
+    // 회원정보 조회 및 수정 API: PATCH /user/profile
     @PatchMapping("/profile")
     public ResponseEntity<ProfileResponseDTO> updateProfile(@Valid @RequestBody ProfileUpdateRequestDTO updateRequestDTO) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -160,7 +136,8 @@ public class UserController {
 
     // 회원탈퇴 API: DELETE /user/deleteAccount
     @DeleteMapping("/deleteAccount")
-    public ResponseEntity<String> deleteAccount(@Valid @RequestBody DeleteAccountRequestDTO deleteAccountRequestDTO) {
+    public ResponseEntity<String> deleteAccount(@Valid @RequestBody DeleteAccountRequestDTO deleteAccountRequestDTO,
+                                                HttpServletResponse response) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -168,6 +145,22 @@ public class UserController {
         String email = auth.getName();
         userService.deleteAccount(email, deleteAccountRequestDTO);
         SecurityContextHolder.clearContext();
+        CookieUtils.clearCookies(response, "JSESSIONID", "accessToken", "refreshToken");
         return new ResponseEntity<>("회원 탈퇴 성공", HttpStatus.OK);
+    }
+
+
+    // 로그인 상태 조회 API: GET /user/loginStatus
+    @GetMapping("/loginStatus")
+    public ResponseEntity<?> loginStatus(Authentication authentication) {
+        // Authentication 객체가 null이 아니고, 인증된 사용자이며, "anonymousUser"가 아닐 경우
+        if (authentication != null && authentication.isAuthenticated()
+                && !"anonymousUser".equals(authentication.getPrincipal())) {
+            // 추가로 필요한 정보가 있으면 authentication.getName() 등으로 제공할 수 있음
+            ProfileResponseDTO profile = userService.getProfileByEmail(authentication.getName());
+            return ResponseEntity.ok(Map.of("loggedIn", true, "username", profile.getUsername()));
+        } else {
+            return ResponseEntity.ok(Map.of("loggedIn", false));
+        }
     }
 }

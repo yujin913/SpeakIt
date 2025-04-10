@@ -20,13 +20,6 @@ const SignInPage = () => {
 
     try {
       const response = await axios.post('http://localhost:8080/user/signIn', data, { withCredentials: true });
-      // 필요에 따라 UI용 최소한의 사용자 정보 저장 (토큰은 HttpOnly 쿠키에 저장됨)
-      localStorage.setItem("user", JSON.stringify({
-        id: response.data.id,
-        username: response.data.username,
-        email: response.data.email,
-        createdAt: response.data.createdAt
-      }));
       alert("로그인 성공!");
       console.log(response.data);
       navigate('/', { replace: true });
