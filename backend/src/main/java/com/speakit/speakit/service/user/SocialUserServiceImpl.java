@@ -4,7 +4,6 @@ import com.speakit.speakit.dto.user.SignInResponseDTO;
 import com.speakit.speakit.model.user.User;
 import com.speakit.speakit.repository.user.UserRepository;
 import com.speakit.speakit.security.JwtTokenProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,23 +19,27 @@ import java.util.Map;
 @Service
 public class SocialUserServiceImpl implements SocialUserService {
 
-    @Autowired
-    private JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final UserRepository userRepository;
+    private final String googleClientId;
+    private final String googleClientSecret;
+    private final String googleRedirectUri;
 
-    @Autowired
-    private UserRepository userRepository;
+    public SocialUserServiceImpl(JwtTokenProvider jwtTokenProvider,
+                                 UserRepository userRepository,
+                                 @Value("${spring.security.oauth2.client.registration.google.client-id}") String googleClientId,
+                                 @Value("${spring.security.oauth2.client.registration.google.client-secret}") String googleClientSecret,
+                                 @Value("${spring.security.oauth2.client.registration.google.redirect-uri}") String googleRedirectUri) {
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.userRepository = userRepository;
+        this.googleClientId = googleClientId;
+        this.googleClientSecret = googleClientSecret;
+        this.googleRedirectUri = googleRedirectUri;
+    }
 
-    @Value("${spring.security.oauth2.client.registration.google.client-id}")
-    private String googleClientId;
-
-    @Value("${spring.security.oauth2.client.registration.google.client-secret}")
-    private String googleClientSecret;
-
-    @Value("${spring.security.oauth2.client.registration.google.redirect-uri}")
-    private String googleRedirectUri;
 
     @Override
-    public SignInResponseDTO processSocialLogin(String code) {
+    public SignInResponseDTO processGoogleSocialLogin(String code) {
         RestTemplate restTemplate = new RestTemplate();
 
         // 1. 인가 코드를 이용하여 구글 액세스 토큰 교환
@@ -112,7 +115,7 @@ public class SocialUserServiceImpl implements SocialUserService {
     }
 
     @Override
-    public void disconnectSocialAccount(String email) {
+    public void disconnectGoogleSocialAccount(String email) {
         User user = userRepository.findByEmail(email);
         if (user == null) {
             throw new RuntimeException("사용자 정보를 찾을 수 없습니다.");

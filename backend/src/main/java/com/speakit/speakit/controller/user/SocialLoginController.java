@@ -7,7 +7,6 @@ import com.speakit.speakit.util.CookieUtils;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +28,7 @@ public class SocialLoginController {
     @GetMapping("/login/oauth2/callback/google")
     public void googleCallback(@RequestParam("code") String code, HttpServletResponse response) throws IOException {
         // SocialUserService가 구글 인가 코드를 처리하여, 내부 JWT 토큰 정보를 포함한 SignInResponseDTO를 반환합니다.
-        SignInResponseDTO signInResponseDTO = socialUserService.processSocialLogin(code);
+        SignInResponseDTO signInResponseDTO = socialUserService.processGoogleSocialLogin(code);
 
         // JwtTokenProvider에서 Duration 타입으로 만료 시간을 가져옵니다.
         // 이후 CookieUtils.setAuthCookies 메서드에 직접 Duration을 전달합니다.
@@ -60,7 +59,7 @@ public class SocialLoginController {
         }
         // JWT 토큰에서 이메일 추출
         String email = jwtTokenProvider.getUsernameFromJWT(token);
-        socialUserService.disconnectSocialAccount(email);
+        socialUserService.disconnectGoogleSocialAccount(email);
         CookieUtils.clearCookies(response, "JSESSIONID", "accessToken", "refreshToken");
         return new ResponseEntity<>("구글 연동 해제 및 계정 삭제가 완료되었습니다.", HttpStatus.OK);
     }
