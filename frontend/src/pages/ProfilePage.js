@@ -58,23 +58,24 @@ const ProfilePage = () => {
   };
 
   const handleDeleteAccount = async () => {
-    // 먼저 프로필 정보가 로드되어 있어야 함
     if (!profile) {
       alert("프로필 정보를 먼저 불러오세요.");
       return;
     }
 
-    // 소셜 로그인 사용자인지 확인: 우리 시스템에서는 소셜 로그인 사용자는 password가 "SOCIAL_LOGIN" 값으로 저장됩니다.
+    // 소셜 로그인 사용자는 password가 "SOCIAL_LOGIN"으로 저장됩니다.
     if (profile.password === "SOCIAL_LOGIN") {
-      // 소셜 로그인 사용자는 비밀번호 입력 없이 탈퇴 진행
+      // 별도의 비밀번호 입력 없이 확인창만 띄워서 연동 해제 API 호출
       if (!window.confirm("정말 계정정보를 삭제하시겠습니까? (소셜 로그인 사용자)")) {
         return;
       }
       try {
-        const response = await axios.post('http://localhost:8080/disconnect/google', {}, { withCredentials: true });
+        // 단일 연동 해제 API (/disconnect/social)를 호출하면,
+        // 백엔드에서 내부적으로 provider 정보를 확인하여 구글/네이버를 구분합니다.
+        const response = await axios.post('http://localhost:8080/disconnect/social', {}, { withCredentials: true });
         console.log("소셜 연동 해제 API 응답:", response.data);
         alert("계정이 삭제되었습니다.");
-        navigate('/', { replace: true });
+        navigate('/signIn', { replace: true });
         window.location.reload();
       } catch (error) {
         let msg = "계정 삭제 실패, 다시 시도해주세요.";
@@ -86,7 +87,7 @@ const ProfilePage = () => {
         console.error("계정 삭제 실패", error.response || error);
       }
     } else {
-      // 일반 사용자의 경우 현재 비밀번호 입력을 요구함
+      // 일반 사용자인 경우 현재 비밀번호가 필요합니다.
       if (!currentPassword.trim()) {
         alert("회원탈퇴를 위해 현재 비밀번호를 입력해 주세요.");
         return;

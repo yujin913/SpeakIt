@@ -38,6 +38,11 @@ const SignInPage = () => {
     window.location.href = 'http://localhost:8080/oauth2/authorization/google';
   };
 
+  // 네이버 로그인 버튼 클릭 시, 백엔드 OAuth2 시작 URL로 리다이렉트
+  const handleNaverSignIn = () => {
+    window.location.href = 'http://localhost:8080/oauth2/authorization/naver';
+  };
+
   return (
     <div className="page-container">
       <Header />
@@ -81,6 +86,12 @@ const SignInPage = () => {
             <div className="form-group">
               <button type="button" className="google-signin" onClick={handleGoogleSignIn}>
                 구글 로그인
+              </button>
+            </div>
+            {/* 네이버 로그인 버튼 */}
+            <div className="form-group">
+              <button type="button" className="naver-signin" onClick={handleNaverSignIn}>
+                네이버 로그인
               </button>
             </div>
           </form>

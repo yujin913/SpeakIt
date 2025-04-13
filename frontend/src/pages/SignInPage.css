@@ -1,4 +1,5 @@
 /* src/pages/SignInPage.css */
+
 /* page-container: 전체 페이지를 감싸며, 헤더는 상단에 위치 */
 .page-container {
   display: flex;
@@ -17,7 +18,7 @@
 /* signin-page: 로그인 폼 컨테이너 */
 .signin-page {
   width: 100%;
-  max-width: 550px; /* 550px로 수정 */
+  max-width: 550px;
   padding: 20px;
   box-sizing: border-box;
   background-color: #f7f7f7;
@@ -33,7 +34,7 @@
 /* signin-form: 폼 영역 */
 .signin-form {
   background: #fff;
-  padding: 55px; /* 55px로 수정 */
+  padding: 55px;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   width: 100%;
@@ -99,6 +100,25 @@
 
 .google-signin:hover {
   background-color: #c33d2f;
+}
+
+/* 네이버 로그인 버튼 스타일 */
+.naver-signin {
+  background-color: #03C75A;
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+  transition: background-color 0.3s;
+  margin-top: 10px;
+}
+
+.naver-signin:hover {
+  background-color: #02a149;
 }
 
 /* 오류 메시지 블록 스타일 */
