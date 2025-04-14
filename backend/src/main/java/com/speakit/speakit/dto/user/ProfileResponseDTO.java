@@ -12,5 +12,6 @@ public class ProfileResponseDTO {
     private String username;
     private String email;
     private String password;
-    private String registrationDate;    // 가입일을 "yyyy-MM-dd" 형태의 문자열로 반환
+    private String registrationDate;
+    private String provider;
 }

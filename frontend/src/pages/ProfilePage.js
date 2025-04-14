@@ -63,9 +63,8 @@ const ProfilePage = () => {
       return;
     }
 
-    // 소셜 로그인 사용자는 password가 "SOCIAL_LOGIN"으로 저장됩니다.
-    if (profile.password === "SOCIAL_LOGIN") {
-      // 별도의 비밀번호 입력 없이 확인창만 띄워서 연동 해제 API 호출
+    // 소셜 로그인 사용자는 provider 필드가 존재함을 기준으로 분기
+    if (profile.provider != null && profile.provider.trim() !== "") {
       if (!window.confirm("정말 계정정보를 삭제하시겠습니까? (소셜 로그인 사용자)")) {
         return;
       }

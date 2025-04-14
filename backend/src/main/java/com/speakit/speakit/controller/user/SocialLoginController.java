@@ -67,6 +67,23 @@ public class SocialLoginController {
     }
 
 
+    @GetMapping("/login/oauth2/callback/kakao")
+    public void kakaoCallback(@RequestParam("code") String code, HttpServletResponse response) throws IOException {
+        // Kakao 소셜 로그인을 처리하여 내부 JWT 토큰 정보를 포함한 SignInResponseDTO를 반환받습니다.
+        SignInResponseDTO signInResponseDTO = socialUserService.processKakaoSocialLogin(code);
+
+        // JwtTokenProvider에서 Duration 타입의 만료 시간을 가져와 CookieUtils.setAuthCookies에 전달합니다.
+        CookieUtils.setAuthCookies(response,
+                signInResponseDTO.getAccessToken(),
+                signInResponseDTO.getRefreshToken(),
+                jwtTokenProvider.getAccessTokenExpiration(),
+                jwtTokenProvider.getRefreshTokenExpiration());
+
+        // 메인 페이지로 리다이렉트합니다.
+        response.sendRedirect("http://localhost:3000");
+    }
+
+
     @PostMapping("/disconnect/social")
     public ResponseEntity<String> disconnectSocialAccount(HttpServletRequest request, HttpServletResponse response) {
         Optional<Cookie> tokenCookieOpt = CookieUtils.getCookie(request, "accessToken");

@@ -128,6 +128,7 @@ public class UserServiceImpl implements UserService {
                 .email(user.getEmail())
                 .password(user.getPassword())
                 .registrationDate(registrationDate)
+                .provider(user.getProvider())
                 .build();
     }
 

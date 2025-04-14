@@ -43,6 +43,16 @@ const SignInPage = () => {
     window.location.href = 'http://localhost:8080/oauth2/authorization/naver';
   };
 
+  // 카카오 로그인 버튼 클릭 시 백엔드 OAuth2 시작 URL로 리다이렉트
+  const handleKakaoSignIn = () => {
+    window.location.href = 'http://localhost:8080/oauth2/authorization/kakao';
+  };
+
+  // 회원가입 페이지로 이동하는 함수
+  const handleSignUp = () => {
+    navigate('/signUp');
+  };
+
   return (
     <div className="page-container">
       <Header />
@@ -82,16 +92,28 @@ const SignInPage = () => {
                 로그인
               </button>
             </div>
-            {/* 구글 로그인 버튼 추가 */}
+            {/* 텍스트만 표시하는 회원가입 버튼 */}
             <div className="form-group">
-              <button type="button" className="google-signin" onClick={handleGoogleSignIn}>
-                구글 로그인
+              <button type="button" className="signup-link" onClick={handleSignUp}>
+                회원가입
               </button>
             </div>
-            {/* 네이버 로그인 버튼 */}
-            <div className="form-group">
-              <button type="button" className="naver-signin" onClick={handleNaverSignIn}>
-                네이버 로그인
+            {/* 구분선 및 간편 로그인 텍스트 */}
+            <div className="social-divider">
+              <hr className="divider-line" />
+              <span className="divider-text">간편 로그인</span>
+              <hr className="divider-line" />
+            </div>
+            {/* 소셜 로그인 버튼 (한 줄로 배치, 이미지만 표시) */}
+            <div className="social-buttons-container">
+              <button type="button" className="social-img-button" onClick={handleGoogleSignIn}>
+                <img src="/google_login_button.png" alt="구글 로그인" className="social-logo" />
+              </button>
+              <button type="button" className="social-img-button" onClick={handleNaverSignIn}>
+                <img src="/naver_login_button.png" alt="네이버 로그인" className="social-logo" />
+              </button>
+              <button type="button" className="social-img-button" onClick={handleKakaoSignIn}>
+                <img src="/kakao_login_button.png" alt="카카오 로그인" className="social-logo" />
               </button>
             </div>
           </form>
