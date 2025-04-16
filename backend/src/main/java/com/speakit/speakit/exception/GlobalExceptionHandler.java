@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+// 통합 예외 처리 핸들러
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -25,7 +26,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    // 입력 검증 오류 (DTO에 @Valid로 발생)
+    // 입력 검증 오류 처리 (DTO에 @Valid로 발생)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException e) {
         String errorMessage = e.getBindingResult().getAllErrors().stream()
@@ -35,6 +36,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
+    // 로그인 시 입력값 검증 처리
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException e) {
         String customMessage = "입력하신 이메일 또는 비밀번호가 올바르지 않습니다. 다시 시도해 주세요.";

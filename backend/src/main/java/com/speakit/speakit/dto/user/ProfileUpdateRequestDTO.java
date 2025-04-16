@@ -3,6 +3,7 @@ package com.speakit.speakit.dto.user;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+// 회원정보 수정 요청 DTO
 @Getter
 @Setter
 @NoArgsConstructor

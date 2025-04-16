@@ -3,7 +3,7 @@ package com.speakit.speakit.dto.user;
 import lombok.*;
 import java.time.LocalDateTime;
 
-// 로그인 성공 후 사용자 정보를 반환
+// 로그인 성공 응답 DTO
 @Getter
 @Setter
 @NoArgsConstructor

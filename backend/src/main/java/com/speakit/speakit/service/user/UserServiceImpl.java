@@ -5,33 +5,21 @@ import com.speakit.speakit.exception.MultiErrorException;
 import com.speakit.speakit.exception.SocialLoginUpdateException;
 import com.speakit.speakit.model.user.User;
 import com.speakit.speakit.repository.user.UserRepository;
-import com.speakit.speakit.security.JwtTokenProvider;
+import com.speakit.speakit.security.jwt.JwtTokenProvider;
 import com.speakit.speakit.util.PasswordPolicy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * UserServiceImpl 클래스는 UserService 인터페이스에 정의된 회원 관련 비즈니스 로직을 구현합니다.
- *
- * - 회원가입: 이메일 중복 체크, 비밀번호 조건 검증(PasswordPolicy 사용), 사용자 정보 저장
- * - 로그인: AuthenticationManager를 통해 인증 수행 후, SecurityContextHolder에 인증 정보 저장 및 사용자 정보 반환
- * - 회원정보 조회: 이메일 기반으로 사용자 정보를 조회하며, 가입일은 'yyyy-MM-dd' 형식으로 포맷하여 반환
- * - 회원정보 수정: 이름 또는 비밀번호를 선택적으로 수정
- * - 회원 탈퇴: 이메일 기반으로 사용자 계정을 삭제
- *
- */
+// UserService 인터페이스에 정의된 회원 관련 비즈니스 로직 구현
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -52,6 +40,7 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    // 회원가입: 이메일 중복 체크, 비밀번호 조건 검증(PasswordPolicy 사용), 사용자 정보 저장
     @Override
     public SignUpResponseDTO signUp(SignUpRequestDTO signUpRequestDTO) {
         List<String> errors = new ArrayList<>();
@@ -85,6 +74,7 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    // 로그인: AuthenticationManager를 통해 인증 수행 후, SecurityContextHolder에 인증 정보 저장 및 사용자 정보 반환
     @Override
     public SignInResponseDTO signIn(SignInRequestDTO signInRequestDTO) {
         // 인증 객체 생성 후 인증 수행 (예외 발생 시 AuthenticationException)
@@ -115,6 +105,7 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    // 회원정보 조회: 이메일 기반으로 사용자 정보를 조회하며, 가입일은 'yyyy-MM-dd' 형식으로 포맷하여 반환
     @Override
     public ProfileResponseDTO getProfileByEmail(String email) {
         User user = userRepository.findByEmail(email);
@@ -133,6 +124,7 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    // 회원정보 수정: 이름 또는 비밀번호를 선택적으로 수정
     @Override
     public ProfileResponseDTO updateProfile(String email, ProfileUpdateRequestDTO updateRequestDTO) {
         User user = userRepository.findByEmail(email);
@@ -160,6 +152,7 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    // 회원 탈퇴: 이메일 기반으로 사용자 계정을 삭제
     @Override
     public void deleteAccount(String email, DeleteAccountRequestDTO deleteAccountRequestDTO) {
         User user = userRepository.findByEmail(email);
@@ -175,22 +168,19 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    // 로그아웃: refresh token 제거로 재발급 방지
     @Override
     public void logout(String email) {
         User user = userRepository.findByEmail(email);
         if (user != null) {
-            // refresh token 제거로 재발급 방지
+
             user.setRefreshToken(null);
             userRepository.save(user);
         }
     }
 
 
-    /**
-     * updateUserFields는 ProfileUpdateRequestDTO에 담긴 값을 확인하여,
-     * User 엔티티의 이름과 비밀번호를 업데이트합니다.
-     * 업데이트된 항목이 있으면 true, 그렇지 않으면 false를 반환합니다.
-     */
+    // 요청에 담긴 값을 확인하여, User 엔티티의 이름과 비밀번호를 업데이트하고, 업데이트된 항목이 있으면 true, 그렇지 않으면 false를 반환
     private boolean updateUserFields(User user, ProfileUpdateRequestDTO updateRequestDTO) {
         boolean updated = false;
         // 이름 업데이트: 값이 존재하면 업데이트
@@ -198,6 +188,7 @@ public class UserServiceImpl implements UserService {
             user.setUsername(updateRequestDTO.getUsername());
             updated = true;
         }
+
         // 새로운 비밀번호 업데이트: 값이 존재하면 검증 후 업데이트
         if (updateRequestDTO.getNewPassword() != null && !updateRequestDTO.getNewPassword().isBlank()) {
             List<String> errors = PasswordPolicy.validate(updateRequestDTO.getNewPassword());
@@ -207,30 +198,16 @@ public class UserServiceImpl implements UserService {
             user.setPassword(passwordEncoder.encode(updateRequestDTO.getNewPassword()));
             updated = true;
         }
+
         return updated;
     }
 
 
+    // 검증된 사용자인지 확인
     @Override
-    public void disconnectSocialAccount(String email) {
-        User user = userRepository.findByEmail(email);
-        if (user == null) {
-            throw new RuntimeException("회원 정보를 찾을 수 없습니다.");
-        }
-        if (user.getProvider() != null && !user.getProvider().isBlank()
-                && "google".equalsIgnoreCase(user.getProvider())) {
-            String socialAccessToken = user.getSocialAccessToken();
-            if (socialAccessToken != null && !socialAccessToken.isBlank()) {
-                String revokeUrl = "https://accounts.google.com/o/oauth2/revoke?token=" + socialAccessToken;
-                RestTemplate restTemplate = new RestTemplate();
-                try {
-                    restTemplate.getForEntity(revokeUrl, String.class);
-                } catch (Exception e) {
-                    throw new RuntimeException("구글 연동 해제에 실패하였습니다.");
-                }
-            }
-        }
-        userRepository.delete(user);
+    public boolean isAuthenticated(Authentication authentication) {
+        return authentication != null &&
+                authentication.isAuthenticated() &&
+                !"anonymousUser".equals(authentication.getPrincipal());
     }
-
 }

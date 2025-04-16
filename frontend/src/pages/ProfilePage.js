@@ -39,6 +39,10 @@ const ProfilePage = () => {
       ...(newPassword.trim() !== '' && { newPassword: newPassword })
     };
 
+    if (!currentPassword.trim()) {
+      alert("회원정보 수정을 위해 현재 비밀번호를 입력해 주세요.");
+      return;
+    }
     try {
       const response = await axios.patch('http://localhost:8080/user/profile', data, { withCredentials: true });
       console.log("회원정보 수정 API 응답:", response.data);
@@ -65,7 +69,7 @@ const ProfilePage = () => {
 
     // 소셜 로그인 사용자는 provider 필드가 존재함을 기준으로 분기
     if (profile.provider != null && profile.provider.trim() !== "") {
-      if (!window.confirm("정말 계정정보를 삭제하시겠습니까? (소셜 로그인 사용자)")) {
+      if (!window.confirm("정말 계정 정보를 삭제하시겠습니까? (소셜 로그인 사용자)")) {
         return;
       }
       try {
@@ -135,7 +139,7 @@ const ProfilePage = () => {
               </div>
               <div className="form-group">
                 <label htmlFor="currentPassword">현재 비밀번호</label>
-                <input type="password" id="currentPassword" placeholder="현재 비밀번호를 입력하세요" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
+                <input type="password" id="currentPassword" placeholder="현재 비밀번호를 입력하세요" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required/>
               </div>
               <div className="form-group">
                 <label htmlFor="newPassword">새 비밀번호 (변경하지 않으려면 비워두세요)</label>

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+// 에러 정보 응답 DTO
 @Getter
 @Setter
 @AllArgsConstructor
