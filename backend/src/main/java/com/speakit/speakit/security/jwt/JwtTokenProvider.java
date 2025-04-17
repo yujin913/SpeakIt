@@ -68,8 +68,9 @@ public class JwtTokenProvider {
 
     // JWT 토큰에서 사용자 이름(이메일)을 추출
     public String getUsernameFromJWT(String token) {
-        Claims claims = Jwts.parser()
+        Claims claims = Jwts.parserBuilder()
                 .setSigningKey(jwtSecretKey)
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
         return claims.getSubject();
@@ -79,12 +80,13 @@ public class JwtTokenProvider {
     // JWT 토큰 유효성 검사
     public boolean validateToken(String authToken) {
         try {
-            Jwts.parser().setSigningKey(jwtSecretKey).parseClaimsJws(authToken);
+            Jwts.parserBuilder()
+                .setSigningKey(jwtSecretKey)
+                .build()
+                .parseClaimsJws(authToken);
             return true;
-        } catch (SignatureException ex) {
-            // 서명이 올바르지 않은 경우
-        } catch (MalformedJwtException ex) {
-            // 토큰 형식이 잘못된 경우
+        } catch (SecurityException | MalformedJwtException ex) {
+            // 서명 문제 또는 잘못된 형식
         } catch (ExpiredJwtException ex) {
             // 토큰이 만료된 경우
         } catch (UnsupportedJwtException ex) {
