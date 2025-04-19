@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
 import './SignInPage.css';
 
 const SignInPage = () => {
@@ -55,7 +54,6 @@ const SignInPage = () => {
 
   return (
     <div className="page-container">
-      <Header />
       <div className="page-content">
         <div className="signin-page">
           <h2>로그인</h2>

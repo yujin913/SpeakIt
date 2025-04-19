@@ -40,21 +40,28 @@
 
 /* 로그인 및 회원가입 링크 스타일 */
 .header-signin,
-.header-signup {
-  background: none;
-  padding: 0;
-  border: none;
-  font-size: 16px;
-  color: #333;
-  text-decoration: none;
-  margin-left: 20px;
-  cursor: pointer;
-  transition: color 0.3s;
+.header-signup,
+.header-tutorial {
+background: none;
+padding: 0;
+border: none;
+font-size: 16px;
+color: #333;
+text-decoration: none;
+margin-left: 20px;
+cursor: pointer;
+transition: color 0.3s;
+}
+
+/* 로고와 튜토리얼 링크 사이 고정 간격 보장 */
+.logo + .header-tutorial {
+  margin-left: 30px;
 }
 
 .header-signin:hover,
-.header-signup:hover {
-  color: #3498db;
+.header-signup:hover,
+.header-tutorial:hover {
+color: #3498db;
 }
 
 /* 로그인 상태일 때 사용자 이름 */

@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
 import './ProfilePage.css';
 
 const ProfilePage = () => {
@@ -118,7 +117,6 @@ const ProfilePage = () => {
 
   return (
     <div className="page-container">
-      <Header />
       <div className="page-content">
         <div className="profile-page">
           <h2>회원정보 조회</h2>

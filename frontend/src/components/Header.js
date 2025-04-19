@@ -38,7 +38,11 @@ const Header = () => {
   return (
     <header className="header">
       <div className="container">
-        <Link to="/" className="logo">SpeakIt</Link>
+      <div className="header-left">
+          <Link to="/" className="logo">SpeakIt</Link>
+          <Link to="/opic/start" className="header-tutorial">튜토리얼</Link>
+        </div>
+
         <nav className="nav">
           {loginStatus.loggedIn ? (
             <>

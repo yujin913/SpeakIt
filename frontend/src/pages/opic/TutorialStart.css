@@ -1,0 +1,51 @@
+/* src/pages/opic/TutorialStart.css */
+
+.tutorial-container {
+    text-align: center;
+    padding: 40px;
+    }
+    
+    .tutorial-title {
+    font-size: 32px;
+    font-weight: bold;
+    color: #0053F7;
+    margin-bottom: 16px;
+    }
+    
+    .tutorial-icon {
+    margin-right: 8px;
+    }
+    
+    .tutorial-subtitle {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 24px;
+    }
+    
+    .tutorial-avatar {
+    width: 200px;
+    height: 200px;
+    border-radius: 4px;
+    margin-bottom: 24px;
+    }
+    
+    .tutorial-description {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 32px;
+    }
+    
+    .tutorial-next-btn {
+    background-color: #F97316;
+    border: none;
+    color: #fff;
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    }
+    
+    .tutorial-next-btn:hover {
+    background-color: #EA580C;
+    }

@@ -1,0 +1,137 @@
+/* src/pages/opic/Survey.css */
+
+/* 페이지 전체 스타일 */
+.survey-page {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: sans-serif;
+    color: #333;
+  }
+  
+  /* Step Indicator */
+  .step-indicator {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin-bottom: 30px;
+  }
+  .step-indicator li {
+    flex: 1;
+    position: relative;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 14px;
+    color: #999;
+    border-top: 2px solid #ccc;
+    border-bottom: 2px solid #ccc;
+  }
+  .step-indicator li span {
+    display: block;
+    font-size: 12px;
+    margin-top: 4px;
+    color: inherit;
+  }
+  .step-indicator li.active {
+    color: #fff;
+    background-color: #ff8946;
+    border-top-color: #ff8946;
+    border-bottom-color: #ff8946;
+  }
+  .step-indicator li.active span {
+    color: rgba(255,255,255,0.8);
+  }
+  
+  /* 제목 및 안내 */
+  .survey-page h2 {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+  .survey-page p {
+    font-size: 14px;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+  .survey-page h3 {
+    font-size: 20px;
+    margin: 24px 0 16px;
+  }
+  
+  /* 질문 그룹 */
+  .question-group {
+    margin-bottom: 20px;
+  }
+  .question {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+  
+  /* 모든 라디오/체크박스 레이블을 블록 레벨로 표시 */
+  .radio-label,
+  .checkbox-label {
+  display: block;      /* 한 줄에 하나씩 */
+  margin: 6px 0;       /* 위아래 간격 */
+  font-size: 15px;
+  cursor: pointer;
+}
+
+/* 체크박스 + 라벨 텍스트 간 간격 */
+.checkbox-label input[type="checkbox"] {
+  margin-right: 8px;
+  vertical-align: middle;
+}
+  
+  /* 버튼 행 */
+  .button-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+  }
+  .btn {
+    padding: 8px 20px;
+    font-size: 15px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+  }
+  .btn.back {
+    background-color: #ff8946;
+    color: #fff;
+  }
+  .btn.back:hover {
+    background-color: #e57e3e;
+  }
+  .btn.next {
+    background-color: #ff8946;
+    color: #fff;
+  }
+  .btn.next:disabled {
+    background-color: #fee1ce;
+    cursor: not-allowed;
+  }
+  .btn.next:hover:enabled {
+    background-color: #e57e3e;
+  }
+  
+  /* 반응형 소폭 화면 대비 */
+  @media (max-width: 600px) {
+    .survey-page {
+      margin: 20px auto;
+      padding: 0 10px;
+    }
+    .step-indicator li {
+      font-size: 12px;
+      padding: 6px 0;
+    }
+    .survey-page h2 {
+      font-size: 20px;
+    }
+    .survey-page h3 {
+      font-size: 18px;
+    }
+    .btn {
+      width: 48%;
+      text-align: center;
+    }
+  }
+  

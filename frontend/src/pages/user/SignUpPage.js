@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
 import './SignUpPage.css';
 
 const SignUpPage = () => {
@@ -38,7 +37,6 @@ const SignUpPage = () => {
 
   return (
     <div className="page-container">
-      <Header />
       <div className="page-content">
         <div className="signup-page">
           <h2>회원가입</h2>
